@@ -2,7 +2,7 @@
 
 - This GitHub repo is the implementation of the paper "SKT-Hang: Hanging Everyday Objects via Object-Agnostic Semantic Keypoint Trajectory Generation"
 
-![](https://hackmd.io/_uploads/BkmbTRjlT.png)
+![SKT-Hang](images/skt-animation.png)
 
 ## System Requirements
 - Linux (Teseted on Ubuntu 20.04)
