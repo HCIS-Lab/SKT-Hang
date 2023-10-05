@@ -643,30 +643,31 @@ def inference(args):
         p.removeBody(hook_id)
         p.removeAllUserDebugItems()
 
-    print("=========================")
-    print("classification accuracy")
-    print('checkpoint: {}'.format(weight_path))
-    print('inference_dir: {}'.format(args.inference_dir))
-    print("accuracy: {}%".format(100* cls_acc / len(hook_pcds)))
-    print("=========================")
-
-    cm = cm.astype(np.int8)
-    heatmap = plt.pcolor(cm)
-    for y in range(cm.shape[0]):
-        for x in range(cm.shape[1]):
-            plt.text(x + 0.5, y + 0.5, cm[y, x],
-                    horizontalalignment='center',
-                    verticalalignment='center',
-                )
-            
-    plt.gca().invert_yaxis()
-    plt.xlabel('prediction', fontsize="16")
-    plt.ylabel('ground truth', fontsize="16")
-    plt.title('Confusion Matrix')
-    plt.colorbar(heatmap)
-    out_path = '{}/{}.png'.format(output_dir, weight_subpath[:-4])
-    plt.savefig(out_path)
     if evaluate:
+
+        print("=========================")
+        print("classification accuracy")
+        print('checkpoint: {}'.format(weight_path))
+        print('inference_dir: {}'.format(args.inference_dir))
+        print("accuracy: {}%".format(100* cls_acc / len(hook_pcds)))
+        print("=========================")
+
+        cm = cm.astype(np.int8)
+        heatmap = plt.pcolor(cm)
+        for y in range(cm.shape[0]):
+            for x in range(cm.shape[1]):
+                plt.text(x + 0.5, y + 0.5, cm[y, x],
+                        horizontalalignment='center',
+                        verticalalignment='center',
+                    )
+                
+        plt.gca().invert_yaxis()
+        plt.xlabel('prediction', fontsize="16")
+        plt.ylabel('ground truth', fontsize="16")
+        plt.title('Confusion Matrix')
+        plt.colorbar(heatmap)
+        out_path = '{}/{}.png'.format(output_dir, weight_subpath[:-4])
+        plt.savefig(out_path)
         
         print("===============================================================================================")  # don't modify this
         print("success rate of all objects")

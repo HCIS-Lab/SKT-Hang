@@ -392,8 +392,7 @@ def inference(args):
 
     # ================== Inference ==================
 
-    # batch_size = 10
-    batch_size = 1
+    batch_size = 10
     all_scores = {
         'easy': [],
         'normal': [],

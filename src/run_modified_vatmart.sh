@@ -8,34 +8,34 @@ fi
 if [ $1 = 'train' ]; then 
 
     model_configs=(
-        # "modified_vatmart_3dof_10wpts"
-        # "modified_vatmart_3dof_10wpts"
-        # "modified_vatmart_3dof_20wpts"
-        # "modified_vatmart_3dof_20wpts"
+        "modified_vatmart_3dof_10wpts"
+        "modified_vatmart_3dof_10wpts"
+        "modified_vatmart_3dof_20wpts"
+        "modified_vatmart_3dof_20wpts"
         "modified_vatmart_3dof_40wpts"
         "modified_vatmart_3dof_40wpts"
 
-        # "modified_vatmart_6dof_10wpts"
-        # "modified_vatmart_6dof_10wpts"
-        # "modified_vatmart_6dof_20wpts"
-        # "modified_vatmart_6dof_20wpts"
+        "modified_vatmart_6dof_10wpts"
+        "modified_vatmart_6dof_10wpts"
+        "modified_vatmart_6dof_20wpts"
+        "modified_vatmart_6dof_20wpts"
         "modified_vatmart_6dof_40wpts"
         "modified_vatmart_6dof_40wpts"
     )
 
     traj_recon_affordance_datasets=(
 
-        # "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
-        # "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview"
-        # "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
-        # "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview"
         "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview"
         "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview"
 
-        # "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
-        # "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview"
-        # "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
-        # "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview"
         "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview"
         "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview"
     )
@@ -117,19 +117,19 @@ elif [ $1 = 'inference' ]; then
     )
 
     inference_dirs=(
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview/test"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
 
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test"
-        "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview/test"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-residual-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
     )
 
     traj_recon_shape_checkpoints=(
@@ -149,7 +149,7 @@ elif [ $1 = 'inference' ]; then
     )
 
     points='1000'
-    
+
     length=${#model_configs[@]}
 
     for (( i=0; i<$length; i++ )) 

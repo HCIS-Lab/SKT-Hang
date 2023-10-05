@@ -379,8 +379,7 @@ def inference(args):
 
     # ================== Inference ==================
 
-    # batch_size = 10
-    batch_size = 1
+    batch_size = 10
     all_scores = {
         'easy': [],
         'normal': [],
@@ -401,7 +400,7 @@ def inference(args):
             'devil': 0,
             'devil_all': 0,
         }
-    
+
     for sid, pcd in enumerate(tqdm(hook_pcds)):
 
         # hook urdf file

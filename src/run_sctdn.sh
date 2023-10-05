@@ -7,74 +7,25 @@ fi
 
 if [ $1 = 'train' ]; then 
 
-    # model_configs=(
-    #     "sctdn_3dof_40wpts"
-    # )
-
-    # traj_recon_affordance_datasets=(
-
-    #     "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-    # )
-
     model_configs=(
-        "sctdn_3dof_40wpts_1.0_0.1_0.1"  
-        "sctdn_3dof_40wpts_1.0_0.1_1.0"  
-        "sctdn_3dof_40wpts_1.0_1.0_0.1"
-        "sctdn_3dof_40wpts_0.1_0.1_1.0"  
-        "sctdn_3dof_40wpts_0.1_1.0_0.1"  
-        "sctdn_3dof_40wpts_0.1_1.0_1.0"  
+        "sctdn_3dof_10wpts"
+        "sctdn_3dof_20wpts"
+        "sctdn_3dof_40wpts"
 
-        # "sctdn_3dof_40wpts_1.0_0.5_0.5"
-        # "sctdn_3dof_40wpts_1.0_0.1_0.5"  
-        # "sctdn_3dof_40wpts_1.0_0.5_1.0"
-        # "sctdn_3dof_40wpts_1.0_0.5_0.1"  
-        # "sctdn_3dof_40wpts_1.0_1.0_0.5"
-        
-        # "sctdn_3dof_40wpts_0.1_0.1_0.5"  
-        # "sctdn_3dof_40wpts_0.1_0.5_1.0"  
-        # "sctdn_3dof_40wpts_0.1_0.5_0.1"  
-        # "sctdn_3dof_40wpts_0.1_1.0_0.5"  
-        # "sctdn_3dof_40wpts_0.1_0.5_0.5"  
-        
-        # "sctdn_3dof_40wpts_0.5_0.1_0.1"  
-        # "sctdn_3dof_40wpts_0.5_0.5_1.0"  
-        # "sctdn_3dof_40wpts_0.5_0.1_0.5"  
-        # "sctdn_3dof_40wpts_0.5_1.0_0.1"  
-        # "sctdn_3dof_40wpts_0.5_0.1_1.0"  
-        # "sctdn_3dof_40wpts_0.5_1.0_0.5"  
-        # "sctdn_3dof_40wpts_0.5_0.5_0.1"  
-        # "sctdn_3dof_40wpts_0.5_1.0_1.0"  
+        "sctdn_6dof_10wpts"
+        "sctdn_6dof_20wpts"
+        "sctdn_6dof_40wpts"
     )
 
     traj_recon_affordance_datasets=(
 
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview"
 
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
-        # "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview"
     )
 
     training_tag='' # $1
@@ -147,13 +98,13 @@ elif [ $1 = 'inference' ]; then
 
     inference_dirs=(
 
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test"
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test" # /test or /val
 
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test"
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test"
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test"
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test" # /test or /val
 
     )
 
@@ -182,8 +133,8 @@ elif [ $1 = 'inference' ]; then
                                                 --config "../config/sctdn/${model_configs[$i]}.yaml" \
                                                 --weight_subpath "1000_points-best.pth" \
                                                 --obj_shape_root ${obj_shape_root} \
-                                                --hook_shape_root ${hook_shape_root} 
-                                                # --evaluate 
+                                                --hook_shape_root ${hook_shape_root} \
+                                                --evaluate 
                                                 # --visualize
         # done
     done 
