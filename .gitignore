@@ -1,0 +1,10 @@
+src/figures/*
+src/training_logs/*
+*/legacy/*
+not_used/
+dataset_old/
+*.pth
+*.gif
+*.zip
+.vscode/
+*/__pycache__/*

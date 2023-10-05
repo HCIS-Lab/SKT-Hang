@@ -1,0 +1,37 @@
+dataset_module: 'dataset_tdn_nc'
+dataset_class: 'KptrajDeformAffordanceDataset'
+enable_affordance: 1
+module: 'sctdn.sctdn' 
+model: 'SCTDN'
+
+dataset_inputs:
+  num_steps: 40
+  wpt_dim: 3
+  sample_num_points: 1000
+  with_noise: 0
+  gt_trajs: 20
+  
+model_inputs:
+  pcd_feat_dim: 512
+  wpt_feat_dim: 32
+  hidden_dim: 256
+  num_steps: 40
+  wpt_dim: 3
+  num_cls: 5
+  decoder_layers: 2
+  lbd_cls: 0.5
+  lbd_affordance: 0.1
+  lbd_deform: 1.0
+  train_traj_start: 1000
+  gt_trajs: 20
+
+lr: 0.0001
+lr_decay_rate: 0.95
+lr_decay_epoch: 100
+weight_decay: 0.0001
+save_freq: 500
+
+batch_size: 96
+
+start_epoch: 0
+stop_epoch: 10000

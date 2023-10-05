@@ -1,0 +1,27 @@
+dataset_module: 'dataset'
+dataset_class: 'KptrajReconAffordanceDataset'
+enable_affordance: 1
+module: 'af.affordance' 
+model: 'Affordance'
+
+dataset_inputs:
+  num_steps: 40 # not used
+  wpt_dim: 3 # not used
+  sample_num_points: 3000
+  enable_traj: 0 
+  affordance_type: 4
+  with_noise: 1
+
+model_inputs:
+  model.use_xyz: 1
+
+lr: 0.0001
+lr_decay_rate: 0.95
+lr_decay_epoch: 50
+weight_decay: 0.0001
+save_freq: 100
+
+batch_size: 128
+
+start_epoch: 0
+stop_epoch: 2000

@@ -1,0 +1,39 @@
+dataset_module: 'dataset'
+dataset_class: 'KptrajReconAffordanceDataset'
+enable_affordance: 1
+module: 'modified_vatmart.modified_vatmart' 
+model: 'VATMart'
+
+dataset_inputs:
+  num_steps: 20
+  wpt_dim: 3
+  sample_num_points: 1000
+  enable_traj: 1
+  affordance_type: 4 # for contact point affordance
+  with_noise: 1
+  
+model_inputs:
+  pcd_feat_dim: 128
+  traj_feat_dim: 128
+  cp_feat_dim: 32
+  hidden_dim: 128
+  z_feat_dim: 128 
+  num_steps: 20
+  wpt_dim: 3
+  lbd_kl: 0.01
+  lbd_affordance: 0.1
+  lbd_recon: 1.0
+  lbd_dir: 10.0
+  kl_annealing: 0
+  train_traj_start: 500
+
+lr: 0.0001
+lr_decay_rate: 0.95
+lr_decay_epoch: 400
+weight_decay: 0.0001
+save_freq: 1000
+
+batch_size: 128
+
+start_epoch: 0
+stop_epoch: 20000
