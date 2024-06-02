@@ -254,14 +254,9 @@ def inference(args):
         inference_obj_paths.extend(paths) 
 
     for inference_hook_path in inference_hook_whole_dirs:
-        # if 'Hook_hs_339_devil' not in inference_hook_path:
-        if 'Hook_omni_124_devil' not in inference_hook_path:
-            continue
         paths = glob.glob(f'{inference_hook_path}/affordance-0.npy')
         inference_hook_paths.extend(paths)
     inference_hook_paths.sort()
-    # print(inference_hook_paths)
-    # exit(0)
 
     obj_contact_poses = []
     obj_grasping_infos = []
@@ -514,9 +509,6 @@ def inference(args):
         points_batch = points_batch[0, input_pcid, :].squeeze()
         points_batch = points_batch.repeat(batch_size, 1, 1)
 
-        # category = int(hook_names[sid].split('_')[-1])
-        # gt_category = torch.Tensor([category]).repeat(batch_size).to(device=device).int()
-
         target_category, contact_point, affordance, recon_trajs = network.sample(points_batch, 
                                                                                     template_trajs, 
                                                                                     difficulty=None, 
@@ -628,7 +620,6 @@ def inference(args):
                 for i, (obj_urdf, obj_contact_pose, obj_grasping_info) in enumerate(zip(obj_urdfs, obj_contact_poses, obj_grasping_infos)):
                     reversed_recovered_traj = recovered_traj[ignore_wpt_num:][::-1]
                     reversed_recovered_traj = refine_waypoint_rotation(reversed_recovered_traj)
-                    # reversed_recovered_traj = [reversed_recovered_traj[0], reversed_recovered_traj[-1]]
 
                     obj_name = obj_urdf.split('/')[-2]
 

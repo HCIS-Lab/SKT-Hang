@@ -159,8 +159,8 @@ elif [ $1 = 'inference' ]; then
                                                 --weight_subpath "1000_points-best.pth" \
                                                 --obj_shape_root ${obj_shape_root} \
                                                 --hook_shape_root ${hook_shape_root} \
-                                                --evaluate \
-                                                --visualize 
+                                                --evaluate 
+                                                # --visualize 
         # done
     done 
 
