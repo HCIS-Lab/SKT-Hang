@@ -28,6 +28,16 @@ if [ $1 = 'train' ]; then
         "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview"
     )
 
+    category_files=(
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+    )
+
     training_tag='' # $1
     log='save' # $2
     time_stamp=$(date +%m.%d.%H.%M)
@@ -70,11 +80,11 @@ if [ $1 = 'train' ]; then
         if [ $log = 'save' ]; then 
 
             output_log="training_logs/${model_config}-${training_tag}/${dataset_name[-2]}-${dataset_name[-1]}.txt"
-            python3 run_sctdn.py --dataset_dir $traj_recon_affordance_dataset --training_tag $training_tag --config "../config/sctdn_loss_ab/${model_config}.yaml" > $output_log
+            python3 run_sctdn.py --dataset_dir $traj_recon_affordance_dataset --category_file ${category_files[$i]} --training_tag $training_tag --config "../config/sctdn/${model_config}.yaml" > $output_log
 
         else 
 
-            python3 run_sctdn.py --dataset_dir $traj_recon_affordance_dataset --training_tag $training_tag --config "../config/sctdn_loss_ab/${model_config}.yaml"
+            python3 run_sctdn.py --dataset_dir $traj_recon_affordance_dataset --category_file ${category_files[$i]} --training_tag $training_tag --config "../config/sctdn/${model_config}.yaml"
 
         fi 
 
@@ -98,13 +108,13 @@ elif [ $1 = 'inference' ]; then
 
     inference_dirs=(
 
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test" # /test or /val
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test" # /test or /val
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
 
-        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview-5c/test" # /test or /val
-        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview-5c/test" # /test or /val
-        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview-5c/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-10-k0/05.02.20.53-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-20-k0/05.02.20.39-1000-singleview/test" # /test or /val
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/test" # /test or /val
 
     )
 
@@ -120,22 +130,37 @@ elif [ $1 = 'inference' ]; then
 
     )
 
+    category_files=(
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+        "../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt"
+    )
+
     length=${#model_configs[@]}
 
     for (( i=0; i<$length; i++ )) 
     do
 
+        # ==================================================== #
+        # [NOTE] You may need to modify the "--weight_subpath" #
+        # ==================================================== #
+
         # for iter in "${iters[@]}"
         # do 
             python3 run_sctdn.py --training_mode 'inference' \
                                                 --inference_dir ${inference_dirs[$i]} \
+                                                --category_file ${category_files[$i]} \
                                                 --checkpoint_dir ${traj_recon_shape_checkpoints[$i]} \
                                                 --config "../config/sctdn/${model_configs[$i]}.yaml" \
                                                 --weight_subpath "1000_points-best.pth" \
                                                 --obj_shape_root ${obj_shape_root} \
                                                 --hook_shape_root ${hook_shape_root} \
-                                                --evaluate 
-                                                # --visualize
+                                                --evaluate \
+                                                --visualize 
         # done
     done 
 

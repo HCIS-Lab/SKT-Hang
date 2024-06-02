@@ -34,9 +34,9 @@ class KptrajDeformAffordanceDataset(Dataset):
         for line in category_raw_data:
             if '==============================================================================================' in  line:
                 oepn = not oepn
-                if not oepn:
-                    continue
+                continue
 
+            if oepn:
                 line_strip = line.strip()
                 hook_name = line_strip.split(' => ')[0]
                 hook_category = int(line_strip.split(' => ')[1])

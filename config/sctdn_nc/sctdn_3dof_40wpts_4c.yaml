@@ -17,7 +17,7 @@ model_inputs:
   hidden_dim: 256
   num_steps: 40
   wpt_dim: 3
-  num_cls: 5
+  num_cls: 4
   decoder_layers: 2
   lbd_cls: 0.1
   lbd_affordance: 0.1

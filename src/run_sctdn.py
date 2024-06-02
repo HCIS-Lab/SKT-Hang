@@ -1,4 +1,4 @@
-import argparse, sys, json, yaml, cv2, imageio, os, time, glob
+import argparse, sys, pathlib, json, yaml, cv2, imageio, os, time, glob
 import open3d as o3d
 import numpy as np
 
@@ -24,6 +24,7 @@ def train(args):
 
     time_stamp = datetime.today().strftime('%m.%d.%H.%M')
     training_tag = time_stamp if args.training_tag == '' else f'{args.training_tag}'
+    category_file = args.category_file
     dataset_dir = args.dataset_dir
     dataset_root = args.dataset_dir.split('/')[-2] # dataset category
     dataset_subroot = args.dataset_dir.split('/')[-1] # time stamp
@@ -33,7 +34,7 @@ def train(args):
     dataset_mode = 0 if 'absolute' in dataset_dir else 1 # 0: absolute, 1: residual
 
     config_file_id = config_file.split('/')[-1][:-5] # remove '.yaml'
-    checkpoint_dir = f'{args.checkpoint_dir}/{config_file_id}-{training_tag}/{dataset_root}-{dataset_subroot}'
+    checkpoint_dir = f'{args.checkpoint_dir}/{config_file_id}-{time_stamp}/{dataset_root}-{dataset_subroot}'
     print(f'checkpoint_dir: {checkpoint_dir}')
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -63,7 +64,7 @@ def train(args):
     save_freq = config['save_freq']
 
     dataset_class = get_dataset_module(dataset_name, dataset_class_name)
-    train_set = dataset_class(dataset_dir=f'{dataset_dir}/train', **dataset_inputs, device=args.device)
+    train_set = dataset_class(dataset_dir=f'{dataset_dir}/train', category_file=category_file, **dataset_inputs, device=args.device)
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 
     sample_num_points = train_set.sample_num_points
@@ -155,8 +156,8 @@ def train(args):
             with torch.no_grad():
                 print('Saving checkpoint ...... ')
                 torch.save(network.state_dict(), os.path.join(checkpoint_dir, f'{sample_num_points}_points-network_epoch-{epoch}.pth'))
-                torch.save(network_opt.state_dict(), os.path.join(checkpoint_dir, f'{sample_num_points}_points-optimizer_epoch-{epoch}.pth'))
-                torch.save(network_lr_scheduler.state_dict(), os.path.join(checkpoint_dir, f'{sample_num_points}_points-scheduler_epoch-{epoch}.pth'))
+                # torch.save(network_opt.state_dict(), os.path.join(checkpoint_dir, f'{sample_num_points}_points-optimizer_epoch-{epoch}.pth'))
+                # torch.save(network_lr_scheduler.state_dict(), os.path.join(checkpoint_dir, f'{sample_num_points}_points-scheduler_epoch-{epoch}.pth'))
 
 
 def capture_from_viewer(geometries):
@@ -191,6 +192,7 @@ def inference(args):
     # ================== config ==================
 
     checkpoint_dir = f'{args.checkpoint_dir}'
+    category_file = args.category_file
     config_file = args.config
     visualize = args.visualize
     evaluate = args.evaluate
@@ -226,6 +228,9 @@ def inference(args):
     batch_size = config['batch_size']
 
     sample_num_points = config['dataset_inputs']['sample_num_points']
+    mask_num = 0
+    if 'mask' in config['dataset_inputs'].keys():
+        mask_num = config['dataset_inputs']['mask']
     print(f'num of points = {sample_num_points}')
 
     # inference
@@ -237,6 +242,7 @@ def inference(args):
     assert os.path.exists(inference_hook_shape_root), f'{inference_hook_shape_root} not exists'
 
     inference_hook_dir = args.inference_dir # for hook shapes
+    inference_hook_root = str(pathlib.Path(inference_hook_dir).parent) # the parent of 'inference_hook_dir'
     inference_hook_whole_dirs = glob.glob(f'{inference_hook_dir}/*')
 
     inference_obj_paths = []
@@ -248,9 +254,14 @@ def inference(args):
         inference_obj_paths.extend(paths) 
 
     for inference_hook_path in inference_hook_whole_dirs:
+        # if 'Hook_hs_339_devil' not in inference_hook_path:
+        if 'Hook_omni_124_devil' not in inference_hook_path:
+            continue
         paths = glob.glob(f'{inference_hook_path}/affordance-0.npy')
         inference_hook_paths.extend(paths)
     inference_hook_paths.sort()
+    # print(inference_hook_paths)
+    # exit(0)
 
     obj_contact_poses = []
     obj_grasping_infos = []
@@ -267,98 +278,117 @@ def inference(args):
 
         obj_name = obj_urdf.split('/')[-2]
         obj_names.append(obj_name)
+        
+    # ================== read template trajectory information ================== #
+    
+    f_category_file = open(category_file, 'r')
+    category_raw_data = f_category_file.readlines()
+    template_dict = {}
+    for line in category_raw_data:
 
-    difficulty_file = 'labels_5c_difficulty.txt'
-    assert os.path.exists(difficulty_file), f'{difficulty_file} not exists'
-    f_difficulty = open(difficulty_file, 'r')
-    f_difficulty_lines = f_difficulty.readlines()
-    difficulty_dict = {}
-    flag = False
-    for f_difficulty_line in f_difficulty_lines:
-        line_strip = f_difficulty_line.strip()
-        hook_name = line_strip.split(',')[0].strip()
-        difficulty = line_strip.split(',')[1].strip()
-        difficulty_dict[hook_name] = difficulty
+        if 'center of class' in line:
+            line_strip = line.strip()
+            hook_name = line_strip.split(': ')[-1].strip()  # ex: center of class [0]: Hook_my_bar_easy => Hook_my_bar_easy
+            hook_category = int(line_strip.split('[')[1].split(']')[0].strip()) # ex: center of class [0]: Hook_my_bar_easy => 0
 
-    # template trajectory database
-    template_hook_names = [
-        'Hook_hcu_113_0-center',
-        'Hook_hcu_347_1-center',
-        'Hook_hs_55_2-center',
-        'Hook_hcu_189_3-center',
-        'Hook_hcu_199_4-center',
-    ]
-    template_trajs = { i:[] for i in range(len(template_hook_names))}
+            assert hook_name not in template_dict.keys()
+            template_dict[hook_name] = hook_category
 
+    # drop 'mask_num' templates
+    # legal_categories = range(len(template_dict.keys()))[:len(template_dict.keys())-mask_num]
+
+    # ========================================================================== #
+    
+    template_trajs = { i: {} for i in range(len(template_dict.keys()))}
+    # template_trajs = { i: {} for i in range(len(legal_categories))}
+    for hook_name in template_dict.keys():
+        index = 0
+
+        category = template_dict[hook_name]
+        # if category not in legal_categories:
+        #     continue
+
+        traj_list_tmp = []
+        shape_files = glob.glob(f'{inference_hook_root}/train/{hook_name}/affordance*.npy')[:1] # point cloud with affordance score (Nx4), the first element is the contact point
+        traj_files = glob.glob(f'{inference_hook_root}/train/{hook_name}/*.json')[index:index+1] # trajectory in 7d format
+
+        pcd = np.load(shape_files[0]).astype(np.float32)
+        pcd_3d = pcd[:,:3]
+        centroid_points, center, scale = normalize_pc(pcd_3d, copy_pts=True) # points will be in a unit sphere
+        center = torch.from_numpy(center).to(device)
+
+        for traj_file in traj_files:
+            
+            f_traj = open(traj_file, 'r')
+            traj_dict = json.load(f_traj)
+
+            waypoints_raw = np.asarray(traj_dict['trajectory'])
+
+            if wpt_dim == 3:
+                waypoints = waypoints_raw[:, :3]
+
+            if wpt_dim == 6:
+                waypoints = waypoints_raw
+
+            if wpt_dim == 9:
+                waypoints = np.zeros((waypoints_raw.shape[0], 9))
+                waypoints[:, :3] = waypoints_raw[:, :3]
+                rot_matrix = R.from_rotvec(waypoints_raw[:, 3:]).as_matrix() # omit absolute position of the first waypoint
+                rot_matrix_xy = np.transpose(rot_matrix, (0, 2, 1)).reshape((waypoints_raw.shape[0], -1))[:, :6] # the first, second column of the rotation matrix
+                waypoints[:, 3:] = rot_matrix_xy # rotation only (6d rotation representation)
+            
+            waypoints = torch.FloatTensor(waypoints).to(device)
+            if dataset_mode == 0:
+                waypoints[:, :3] = (waypoints[:, :3] - center) / scale
+            elif dataset_mode == 1:
+                waypoints[0, :3] = (waypoints[0, :3] - center) / scale 
+                waypoints[1:, :3] = waypoints[1:, :3] / scale 
+            traj_list_tmp.append(waypoints)
+
+        template_trajs[category] = traj_list_tmp
+    
     hook_names = []
     hook_pcds = []
     hook_affords = []
     hook_urdfs = []
 
+    class_num = 15 if ('/val' in inference_hook_dir) or ('/test' in inference_hook_dir) else 20000
+    easy_cnt = 0
+    normal_cnt = 0
+    hard_cnt = 0
+    devil_cnt = 0
     for inference_hook_path in inference_hook_paths:
 
         hook_name = inference_hook_path.split('/')[-2]
         
         points = np.load(inference_hook_path)[:, :3].astype(np.float32)
+
+        easy_cnt   += 1 if 'easy'   in hook_name else 0
+        normal_cnt += 1 if 'normal' in hook_name else 0
+        hard_cnt   += 1 if 'hard'   in hook_name else 0
+        devil_cnt  += 1 if 'devil'  in hook_name else 0
+
+        if 'easy' in hook_name and easy_cnt > class_num:
+            continue
+        if 'normal' in hook_name and normal_cnt > class_num:
+            continue
+        if 'hard' in hook_name and hard_cnt > class_num:
+            continue
+        if 'devil' in hook_name and devil_cnt > class_num:
+            continue
+
+        urdfs = glob.glob('{}/{}*/base.urdf'.format(inference_hook_shape_root, hook_name[:-len(hook_name.split('_')[-1])]))
         
-        if hook_name in template_hook_names:
-            
-            category = int(hook_name.split('_')[-1]) if 'center' not in hook_name else int(hook_name.split('_')[-1].split('-')[0])
-
-            index = 0
-
-            traj_list_tmp = []
-            shape_files = glob.glob(f'{inference_hook_dir}/{hook_name}/affordance*.npy')[:1] # point cloud with affordance score (Nx4), the first element is the contact point
-            traj_files = glob.glob(f'{inference_hook_dir}/{hook_name}/*.json')[index:index+1] # trajectory in 7d format
-
-            pcd = np.load(shape_files[0]).astype(np.float32)
-            pcd_3d = pcd[:,:3]
-            centroid_points, center, scale = normalize_pc(pcd_3d, copy_pts=True) # points will be in a unit sphere
-            center = torch.from_numpy(center).to(device)
-
-            for traj_file in traj_files:
-                
-                f_traj = open(traj_file, 'r')
-                traj_dict = json.load(f_traj)
-
-                waypoints_raw = np.asarray(traj_dict['trajectory'])
-
-                if wpt_dim == 3:
-                    waypoints = waypoints_raw[:, :3]
-
-                if wpt_dim == 6:
-                    waypoints = waypoints_raw
-
-                if wpt_dim == 9:
-                    waypoints = np.zeros((waypoints_raw.shape[0], 9))
-                    waypoints[:, :3] = waypoints_raw[:, :3]
-                    rot_matrix = R.from_rotvec(waypoints_raw[:, 3:]).as_matrix() # omit absolute position of the first waypoint
-                    rot_matrix_xy = np.transpose(rot_matrix, (0, 2, 1)).reshape((waypoints_raw.shape[0], -1))[:, :6] # the first, second column of the rotation matrix
-                    waypoints[:, 3:] = rot_matrix_xy # rotation only (6d rotation representation)
-                
-                waypoints = torch.FloatTensor(waypoints).to(device)
-                if dataset_mode == 0:
-                    waypoints[:, :3] = (waypoints[:, :3] - center) / scale
-                elif dataset_mode == 1:
-                    waypoints[0, :3] = (waypoints[0, :3] - center) / scale 
-                    waypoints[1:, :3] = waypoints[1:, :3] / scale 
-                traj_list_tmp.append(waypoints)
-
-            template_trajs[category] = traj_list_tmp
-
-        else :
-            
-            hook_names.append(hook_name)
-
-            urdfs = glob.glob('{}/{}*/base.urdf'.format(inference_hook_shape_root, hook_name[:-len(hook_name.split('_')[-1])]))
-            assert len(urdfs) > 0
-            hook_urdf = urdfs[0]
-            hook_urdfs.append(hook_urdf)
-            hook_pcds.append(points)
+        assert len(urdfs) > 0
+        hook_urdf = urdfs[0]
+        hook_names.append(hook_name)
+        hook_urdfs.append(hook_urdf)
+        hook_pcds.append(points)
 
     inference_subdir = os.path.split(inference_hook_dir)[-1]
     output_dir = f'inference/inference_trajs/{checkpoint_subdir}/{checkpoint_subsubdir}/{inference_subdir}'
     os.makedirs(output_dir, exist_ok=True)
+
     
     # ================== Model ==================
 
@@ -431,8 +461,8 @@ def inference(args):
         'devil': [],
         'all': []
     }
+    num_class = len(template_trajs.keys())
     cls_acc = 0
-    num_class = len(template_hook_names)
     cm = np.zeros((num_class, num_class))
     
     obj_sucrate = {}
@@ -451,6 +481,7 @@ def inference(args):
     network.eval()
 
     for sid, pcd in enumerate(tqdm(hook_pcds)):
+
 
         # urdf file
         hook_urdf = hook_urdfs[sid]
@@ -483,8 +514,8 @@ def inference(args):
         points_batch = points_batch[0, input_pcid, :].squeeze()
         points_batch = points_batch.repeat(batch_size, 1, 1)
 
-        category = int(hook_names[sid].split('_')[-1])
-        gt_category = torch.Tensor([category]).repeat(batch_size).to(device=device).int()
+        # category = int(hook_names[sid].split('_')[-1])
+        # gt_category = torch.Tensor([category]).repeat(batch_size).to(device=device).int()
 
         target_category, contact_point, affordance, recon_trajs = network.sample(points_batch, 
                                                                                     template_trajs, 
@@ -494,8 +525,8 @@ def inference(args):
                                                                                     return_feat=False)
         
         contact_point = contact_point.detach().cpu().numpy()
-        cls_acc += torch.mean((target_category == gt_category).float())
-        cm[(gt_category, target_category)] += 1
+        # cls_acc += torch.mean((target_category == gt_category).float())
+        # cm[(gt_category, target_category)] += 1
 
         ###############################################
         # =========== for affordance head =========== #
@@ -527,6 +558,29 @@ def inference(args):
             wpts.append(wpt_mesh)
 
         if visualize:
+
+
+            r = point_cloud.get_rotation_matrix_from_xyz((0, np.pi / 2, 0)) # (rx, ry, rz) = (right, up, inner)
+            point_cloud_raw.rotate(r, center=(0, 0, 0))
+            point_cloud.rotate(r, center=(0, 0, 0))
+            contact_point_coor.rotate(r, center=(0, 0, 0))
+            for wpt in wpts:
+                wpt.rotate(r, center=(0, 0, 0))
+
+            geometries = [point_cloud_raw, contact_point_coor] + wpts
+
+            img = capture_from_viewer([point_cloud_raw])
+            save_path = f"{output_dir}/{weight_subpath[:-4]}-pcd-{hook_name}.jpg"
+            imageio.imsave(save_path, img)
+
+            img = capture_from_viewer([point_cloud])
+            save_path = f"{output_dir}/{weight_subpath[:-4]}-affor-{hook_name}.jpg"
+            imageio.imsave(save_path, img)
+
+            img = capture_from_viewer(geometries)
+            save_path = f"{output_dir}/{weight_subpath[:-4]}-traj-{hook_name}.jpg"
+            imageio.imsave(save_path, img)
+
             frames = 10
             rotate_per_frame = np.pi * 2 / frames
             for _ in range(frames):
@@ -574,11 +628,12 @@ def inference(args):
                 for i, (obj_urdf, obj_contact_pose, obj_grasping_info) in enumerate(zip(obj_urdfs, obj_contact_poses, obj_grasping_infos)):
                     reversed_recovered_traj = recovered_traj[ignore_wpt_num:][::-1]
                     reversed_recovered_traj = refine_waypoint_rotation(reversed_recovered_traj)
+                    # reversed_recovered_traj = [reversed_recovered_traj[0], reversed_recovered_traj[-1]]
 
                     obj_name = obj_urdf.split('/')[-2]
 
                     obj_id = p.loadURDF(obj_urdf)
-                    rgbs, success = robot_kptraj_hanging(robot, reversed_recovered_traj, obj_id, hook_id, obj_contact_pose, obj_grasping_info, visualize=visualize if i == 0 else False)
+                    rgbs, success = robot_kptraj_hanging(robot, reversed_recovered_traj, obj_id, hook_id, obj_contact_pose, obj_grasping_info, visualize=visualize)
                     res = 'success' if success else 'failed'
                     obj_sucrate[obj_name][difficulty] += 1 if success else 0
                     obj_sucrate[obj_name][f'{difficulty}_all'] += 1
@@ -586,7 +641,10 @@ def inference(args):
                     p.removeBody(obj_id)
 
                     if len(rgbs) > 0 and traj_id == 0: # only when visualize=True
-                        rgbs[0].save(f"{output_dir}/{weight_subpath[:-4]}-{sid}-{hook_name}-{res}.gif", save_all=True, append_images=rgbs, duration=80, loop=0)
+                        # gif_path = f"{output_dir}/{weight_subpath[:-4]}-{sid}-{hook_name}-{res}.gif"
+                        gif_path = f"{weight_subpath[:-4]}-{sid}-{hook_name}-{obj_name}-{res}.gif"
+                        rgbs[0].save(gif_path, save_all=True, append_images=rgbs, duration=20, loop=0)
+                        print(f'{gif_path} saved')
 
                 max_obj_success_cnt = max(obj_success_cnt, max_obj_success_cnt)
 
@@ -645,29 +703,29 @@ def inference(args):
 
     if evaluate:
 
-        print("=========================")
-        print("classification accuracy")
-        print('checkpoint: {}'.format(weight_path))
-        print('inference_dir: {}'.format(args.inference_dir))
-        print("accuracy: {}%".format(100* cls_acc / len(hook_pcds)))
-        print("=========================")
+        # print("=========================")
+        # print("classification accuracy")
+        # print('checkpoint: {}'.format(weight_path))
+        # print('inference_dir: {}'.format(args.inference_dir))
+        # print("accuracy: {}%".format(100* cls_acc / len(hook_pcds)))
+        # print("=========================")
 
-        cm = cm.astype(np.int8)
-        heatmap = plt.pcolor(cm)
-        for y in range(cm.shape[0]):
-            for x in range(cm.shape[1]):
-                plt.text(x + 0.5, y + 0.5, cm[y, x],
-                        horizontalalignment='center',
-                        verticalalignment='center',
-                    )
+        # cm = cm.astype(np.int8)
+        # heatmap = plt.pcolor(cm)
+        # for y in range(cm.shape[0]):
+        #     for x in range(cm.shape[1]):
+        #         plt.text(x + 0.5, y + 0.5, cm[y, x],
+        #                 horizontalalignment='center',
+        #                 verticalalignment='center',
+        #             )
                 
-        plt.gca().invert_yaxis()
-        plt.xlabel('prediction', fontsize="16")
-        plt.ylabel('ground truth', fontsize="16")
-        plt.title('Confusion Matrix')
-        plt.colorbar(heatmap)
-        out_path = '{}/{}.png'.format(output_dir, weight_subpath[:-4])
-        plt.savefig(out_path)
+        # plt.gca().invert_yaxis()
+        # plt.xlabel('prediction', fontsize="16")
+        # plt.ylabel('ground truth', fontsize="16")
+        # plt.title('Confusion Matrix')
+        # plt.colorbar(heatmap)
+        # out_path = '{}/{}.png'.format(output_dir, weight_subpath[:-4])
+        # plt.savefig(out_path)
         
         print("===============================================================================================")  # don't modify this
         print("success rate of all objects")
@@ -716,7 +774,8 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser()
     # about dataset
-    parser.add_argument('--dataset_dir', '-dd', type=str, default='')
+    parser.add_argument('--dataset_dir', '-dd', type=str, default='../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview')
+    parser.add_argument('--category_file', '-cf', type=str, default='../dataset/kptraj_all_smooth-absolute-40-k0/05.02.20.23-1000-singleview/labels_5c.txt')
 
     # training mode
     parser.add_argument('--training_mode', '-tm', type=str, default='train', help="training mode : [train, inference]")

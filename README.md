@@ -32,6 +32,33 @@ $ pip install -r requirements.txt
 $ pip install -e .
 ```
 
+## Dataset and Checkpoints
+Download all the datasets, checkpoints, and shape assets [here](https://nycu1-my.sharepoint.com/:f:/g/personal/ychen_m365_nycu_edu_tw/Evo5W5e0uV1AiO5LWKmQH08BQU0ZjQDPfVRSMi9SD3nykg?e=C77qm3)
+
+#### skt_dataset.zip
+- Please unzip it and put all the folders in skt_dataset/ into dataset/ in this codebase.
+
+#### all_checkpoints.zip
+- Please unzip it and put all the checkpoint folders in all_checkpoints/ into src/checkpoints/ in this codebase.
+
+#### all_shapes.zip
+- Please unzip it and put all the shape folders in all_shapes/ into shapes/ in this codebase.
+
+## Training and Inference
+
+- Train SCTDN
+```
+$ cd src
+$ ./run_sctdn.sh train
+```
+
+- Inference SCTDN
+```
+# You may need to modify the checkpoint path in this script
+$ cd src
+$ ./run_sctdn.sh inference
+```
+
 ## File Structures
 ```
 skt-hang/

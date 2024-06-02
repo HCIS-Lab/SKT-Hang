@@ -1,4 +1,4 @@
-dataset_module: 'dataset_tdn_nc'
+dataset_module: 'dataset_tdn_nc_new'
 dataset_class: 'KptrajDeformAffordanceDataset'
 enable_affordance: 1
 module: 'sctdn.sctdn' 
